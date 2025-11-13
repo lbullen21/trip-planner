@@ -1,0 +1,24 @@
+{
+  "destinations": [
+    {
+      "id": 1,
+      "name": "Paris",
+      "country": "France",
+      "description": "The City of Light",
+      "startDate": "2024-09-01",
+      "endDate": "2024-09-07",
+      "image": "/images/Paris.jpeg",
+      "attractions": ["Eiffel Tower", "Louvre Museum", "Notre-Dame"]
+    },
+    {
+      "id": 2,
+      "name": "Tokyo",
+      "country": "Japan", 
+      "startDate": "2024-10-10",
+      "endDate": "2024-10-20",
+      "image": "/images/Tokyo.jpeg",
+      "description": "A blend of tradition and modernity",
+      "attractions": ["Shibuya Crossing", "Sensoji Temple", "Tokyo Tower"]
+    }
+  ]
+}
