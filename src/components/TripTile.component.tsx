@@ -53,11 +53,25 @@ const SortableTripTile = ({ destination }: { destination: Destination }) => {
         <div 
             ref={setNodeRef} 
             style={style} 
-            {...listeners} 
-            {...attributes}
-            className="border border-gray-200 rounded-lg p-4 mb-4 text-black cursor-move hover:shadow-lg transition-all duration-200 bg-white"
+            className="border border-gray-200 rounded-lg p-4 mb-4 text-black hover:shadow-lg transition-all duration-200 bg-white relative"
         >
-            <h2 className="text-xl font-bold">{destination.name}</h2>
+            {/* Drag handle */}
+            <div 
+                {...listeners} 
+                {...attributes}
+                className="absolute top-1/2 transform -translate-y-1/2 right-2 cursor-move p-1 rounded hover:bg-gray-100 transition-colors"
+                title="Drag to reorder"
+            >
+                <Image 
+                    src="/draggable.svg" 
+                    alt="Drag handle" 
+                    width={50} 
+                    height={50} 
+                    className="opacity-50 hover:opacity-100 transition-opacity"
+                />
+            </div>
+            
+            <h2 className="text-xl font-bold pr-8">{destination.name}</h2>
             <div className="flex flex-row">
                 <Image
                     src={destination.image}
