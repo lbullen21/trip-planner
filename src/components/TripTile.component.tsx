@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from 'next/navigation';
 import { 
     DndContext, 
     closestCenter,
@@ -23,6 +24,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Destination } from "../utils/types";
 
 const SortableTripTile = ({ destination, onDelete }: { destination: Destination, onDelete: (id: number) => void }) => {
+    const router = useRouter();
     const {
         attributes,
         listeners,
@@ -47,17 +49,28 @@ const SortableTripTile = ({ destination, onDelete }: { destination: Destination,
         });
     };
 
+    const handleTileClick = (e: React.MouseEvent) => {
+        // Don't navigate if clicking on drag handle or delete button
+        const target = e.target as HTMLElement;
+        if (target.closest('[data-drag-handle]') || target.closest('[data-delete-button]')) {
+            return;
+        }
+        router.push(`/trip/${destination.id}`);
+    };
+
     return (
         <div 
             ref={setNodeRef} 
             style={style} 
-            className="border border-gray-200 rounded-lg p-4 mb-4 text-black hover:shadow-lg transition-all duration-200 bg-white relative"
+            className="border border-gray-200 rounded-lg p-4 mb-4 text-black hover:shadow-lg transition-all duration-200 bg-white relative cursor-pointer"
+            onClick={handleTileClick}
         >
             {/* Drag handle */}
             <div 
                 {...listeners} 
                 {...attributes}
-                className="absolute top-2 right-2 cursor-move p-1 rounded hover:bg-gray-100 transition-colors"
+                data-drag-handle
+                className="absolute top-2 right-2 cursor-move p-1 rounded hover:bg-gray-100 transition-colors z-10"
                 title="Drag to reorder"
             >
                 <Image 
@@ -71,7 +84,8 @@ const SortableTripTile = ({ destination, onDelete }: { destination: Destination,
             
             {/* Delete button */}
             <div 
-                className="absolute top-1/2 transform -translate-y-1/2 right-2 cursor-pointer p-1 rounded hover:bg-red-100 transition-colors"
+                data-delete-button
+                className="absolute top-1/2 transform -translate-y-1/2 right-2 cursor-pointer p-1 rounded hover:bg-red-100 transition-colors z-10"
                 title="Delete trip"
                 onClick={() => onDelete(destination.id)}
             >
@@ -111,12 +125,11 @@ const SortableTripTile = ({ destination, onDelete }: { destination: Destination,
 
 interface TripTileProps {
     destinations: Destination[];
-    onAddTrip: (newTrip: Destination) => void;
     onReorderTrips: (newDestinations: Destination[]) => void;
     onDeleteTrip: (id: number) => void;
 }
 
-const TripTile = ({ destinations, onAddTrip, onReorderTrips, onDeleteTrip }: TripTileProps) => {
+const TripTile = ({ destinations, onReorderTrips, onDeleteTrip }: TripTileProps) => {
     const sensors = useSensors(
         useSensor(PointerSensor),
         useSensor(KeyboardSensor, {
