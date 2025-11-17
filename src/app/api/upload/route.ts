@@ -42,8 +42,12 @@ export async function POST(request: NextRequest) {
     const uploadDir = path.join(process.cwd(), 'public/images/uploads');
     try {
       await mkdir(uploadDir, { recursive: true });
-    } catch {
-      // Directory might already exist, that's okay
+    } catch (err) {
+      console.error('Error creating upload directory:', err);
+      return NextResponse.json(
+        { error: 'Could not create upload directory' },
+        { status: 500 }
+      );
     }
 
     // Write file
