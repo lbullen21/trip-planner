@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import { 
     DndContext, 
@@ -21,10 +20,9 @@ import {
     useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { destinations as initialDestinations } from "../lib/data";
 import { Destination } from "../utils/types";
 
-const SortableTripTile = ({ destination }: { destination: Destination }) => {
+const SortableTripTile = ({ destination, onDelete }: { destination: Destination, onDelete: (id: number) => void }) => {
     const {
         attributes,
         listeners,
@@ -59,18 +57,32 @@ const SortableTripTile = ({ destination }: { destination: Destination }) => {
             <div 
                 {...listeners} 
                 {...attributes}
-                className="absolute top-1/2 transform -translate-y-1/2 right-2 cursor-move p-1 rounded hover:bg-gray-100 transition-colors"
+                className="absolute top-2 right-2 cursor-move p-1 rounded hover:bg-gray-100 transition-colors"
                 title="Drag to reorder"
             >
                 <Image 
                     src="/draggable.svg" 
                     alt="Drag handle" 
-                    width={50} 
-                    height={50} 
+                    width={25} 
+                    height={25} 
                     className="opacity-50 hover:opacity-100 transition-opacity"
                 />
             </div>
             
+            {/* Delete button */}
+            <div 
+                className="absolute top-1/2 transform -translate-y-1/2 right-2 cursor-pointer p-1 rounded hover:bg-red-100 transition-colors"
+                title="Delete trip"
+                onClick={() => onDelete(destination.id)}
+            >
+                <Image
+                    src="/delete.png"
+                    alt="Delete trip"
+                    width={25}
+                    height={25}
+                    className="opacity-50 hover:opacity-100 transition-opacity"
+                />
+            </div>
             <h2 className="text-xl font-bold pr-8">{destination.name}</h2>
             <div className="flex flex-row">
                 <Image
@@ -97,9 +109,14 @@ const SortableTripTile = ({ destination }: { destination: Destination }) => {
     );
 };
 
-const TripTile = () => {
-    const [destinations, setDestinations] = useState<Destination[]>(initialDestinations);
-    
+interface TripTileProps {
+    destinations: Destination[];
+    onAddTrip: (newTrip: Destination) => void;
+    onReorderTrips: (newDestinations: Destination[]) => void;
+    onDeleteTrip: (id: number) => void;
+}
+
+const TripTile = ({ destinations, onAddTrip, onReorderTrips, onDeleteTrip }: TripTileProps) => {
     const sensors = useSensors(
         useSensor(PointerSensor),
         useSensor(KeyboardSensor, {
@@ -111,12 +128,10 @@ const TripTile = () => {
         const { active, over } = event;
 
         if (active.id !== over?.id) {
-            setDestinations((items) => {
-                const oldIndex = items.findIndex((item) => item.id === active.id);
-                const newIndex = items.findIndex((item) => item.id === over?.id);
-
-                return arrayMove(items, oldIndex, newIndex);
-            });
+            const oldIndex = destinations.findIndex((item: Destination) => item.id === active.id);
+            const newIndex = destinations.findIndex((item: Destination) => item.id === over?.id);
+            const reorderedDestinations = arrayMove(destinations, oldIndex, newIndex);
+            onReorderTrips(reorderedDestinations);
         }
     }
 
@@ -131,7 +146,11 @@ const TripTile = () => {
                 strategy={verticalListSortingStrategy}
             >
                 {destinations.map((destination) => (
-                    <SortableTripTile key={destination.id} destination={destination} />
+                    <SortableTripTile 
+                        key={destination.id} 
+                        destination={destination} 
+                        onDelete={onDeleteTrip}
+                    />
                 ))}
             </SortableContext>
         </DndContext>
