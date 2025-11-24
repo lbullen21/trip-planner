@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import TripTile from './TripTile.component';
 import AddTrip from './AddTrip.component';
-import { destinations as initialDestinations } from '../lib/data';
 import { Destination } from '../utils/types';
 
 interface TripManagerProps {
@@ -33,9 +32,9 @@ const TripManager = ({ children }: TripManagerProps) => {
             }
         } catch (error) {
             console.error('Error fetching trips:', error);
-            setError('Failed to load trips');
-            // Fallback to initial data if API fails
-            setDestinations(initialDestinations);
+            setError('Failed to load trips from database');
+            // Keep destinations empty if API fails - only use database data
+            setDestinations([]);
         } finally {
             setIsLoading(false);
         }
@@ -114,6 +113,12 @@ const TripManager = ({ children }: TripManagerProps) => {
                 {error && (
                     <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                         {error}
+                    </div>
+                )}
+                {destinations.length === 0 && !isLoading && !error && (
+                    <div className="text-center py-12 text-gray-500">
+                        <p className="text-lg mb-2">No trips found</p>
+                        <p>Add your first trip using the form on the right!</p>
                     </div>
                 )}
                 <TripTile 
