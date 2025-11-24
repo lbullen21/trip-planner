@@ -4,8 +4,10 @@ import Trip, { ITrip } from '../../../models/Trip';
 
 export async function GET() {
   try {
+    console.log('Connecting to database...');
     await connectToDatabase();
     const trips = await Trip.find({}).sort({ createdAt: -1 });
+    console.log(`Found ${trips.length} trips`);
     return NextResponse.json({ success: true, data: trips });
   } catch (error) {
     console.error('Error fetching trips:', error);
