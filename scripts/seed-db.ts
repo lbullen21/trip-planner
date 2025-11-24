@@ -62,32 +62,42 @@ const sampleTrips = [
   {
     id: 1,
     name: "Paris",
-    country: "France", 
-    description: "The City of Light awaits with its iconic landmarks, world-class museums, and romantic atmosphere.",
-    startDate: "2024-06-15",
-    endDate: "2024-06-22",
-    image: "/paris.jpg",
-    attractions: ["Eiffel Tower", "Louvre Museum", "Notre-Dame Cathedral", "Champs-Élysées"]
+    country: "France",
+    description: "The City of Light",
+    startDate: "2024-09-01",
+    endDate: "2024-09-07",
+    image: "/images/Paris.jpeg",
+    attractions: ["Eiffel Tower", "Louvre Museum", "Notre-Dame"]
   },
   {
     id: 2,
     name: "Tokyo",
-    country: "Japan",
-    description: "Experience the perfect blend of ancient tradition and cutting-edge modernity in Japan's vibrant capital.",
-    startDate: "2024-08-10",
-    endDate: "2024-08-18", 
-    image: "/tokyo.jpg",
-    attractions: ["Senso-ji Temple", "Tokyo Skytree", "Shibuya Crossing", "Imperial Palace"]
+    country: "Japan", 
+    startDate: "2024-10-10",
+    endDate: "2024-10-20",
+    image: "/images/Tokyo.jpeg",
+    description: "A blend of tradition and modernity",
+    attractions: ["Shibuya Crossing", "Sensoji Temple", "Tokyo Tower"]
   },
   {
     id: 3,
-    name: "New York City",
-    country: "United States",
-    description: "The city that never sleeps offers endless entertainment, iconic landmarks, and diverse neighborhoods to explore.",
-    startDate: "2024-09-05",
-    endDate: "2024-09-12",
-    image: "/nyc.jpg", 
-    attractions: ["Statue of Liberty", "Central Park", "Times Square", "Brooklyn Bridge", "9/11 Memorial"]
+    name: "London",
+    country: "United Kingdom",
+    description: "A historic city blending royal heritage with modern culture",
+    startDate: "2025-09-15",
+    endDate: "2025-09-22",
+    image: "/images/London.jpeg",
+    attractions: ["Big Ben", "Tower Bridge", "British Museum", "Buckingham Palace"]
+  },
+  {
+    id: 4,
+    name: "Edinburgh",
+    country: "Scotland",
+    description: "A medieval city with stunning architecture and rich history",
+    startDate: "2025-10-05",
+    endDate: "2025-10-12",
+    image: "/images/Edinburgh.jpeg",
+    attractions: ["Edinburgh Castle", "Royal Mile", "Arthur's Seat", "Holyrood Palace"]
   }
 ];
 
