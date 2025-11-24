@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from 'next/navigation';
-import { useState, use } from 'react';
+import { useState, use, useEffect } from 'react';
 import Image from 'next/image';
 import { Destination } from '../../../utils/types';
 import { getDestinationImage } from '../../../utils/imageHelper';
@@ -17,88 +17,104 @@ export default function TripPage({ params }: TripPageProps) {
     const router = useRouter();
     const resolvedParams = use(params);
     
-    // Get trip data from localStorage - use lazy initialization
-    const [trip, setTrip] = useState<Destination | null>(() => {
-        if (typeof window === 'undefined') return null; // SSR safety
-        const savedTrips = localStorage.getItem('trips');
-        if (savedTrips) {
-            const trips: Destination[] = JSON.parse(savedTrips);
-            const foundTrip = trips.find(t => t.id === parseInt(resolvedParams.id));
-            if (!foundTrip) {
-                // Trip not found, schedule redirect
-                setTimeout(() => router.push('/'), 0);
-                return null;
-            }
-            return foundTrip;
-        }
-        return null;
-    });
-
+    const [trip, setTrip] = useState<Destination | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     
-    // Initialize form data based on trip - use lazy initialization
-    const [editFormData, setEditFormData] = useState(() => {
-        if (!trip) return {
-            name: '',
-            country: '',
-            description: '',
-            startDate: '',
-            endDate: '',
-            attractions: '',
-            customImage: ''
-        };
-        
-        return {
-            name: trip.name,
-            country: trip.country,
-            description: trip.description,
-            startDate: trip.startDate,
-            endDate: trip.endDate,
-            attractions: trip.attractions.join(', '),
-            customImage: trip.image.startsWith('/uploads/') ? trip.image : ''
-        };
+    // Initialize form data based on trip
+    const [editFormData, setEditFormData] = useState({
+        name: '',
+        country: '',
+        description: '',
+        startDate: '',
+        endDate: '',
+        attractions: '',
+        customImage: ''
     });
 
-    const [imageMode, setImageMode] = useState<'auto' | 'custom'>(() => 
-        trip?.image.startsWith('/uploads/') ? 'custom' : 'auto'
-    );
+    const [imageMode, setImageMode] = useState<'auto' | 'custom'>('auto');
 
-    const handleSave = () => {
+    // Load trip data from API on mount
+    useEffect(() => {
+        const fetchTrip = async () => {
+            try {
+                setIsLoading(true);
+                const response = await fetch(`/api/trips/${resolvedParams.id}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const tripData = result.data;
+                    setTrip(tripData);
+                    // Initialize edit form with trip data
+                    setEditFormData({
+                        name: tripData.name,
+                        country: tripData.country,
+                        description: tripData.description,
+                        startDate: tripData.startDate,
+                        endDate: tripData.endDate,
+                        attractions: tripData.attractions.join(', '),
+                        customImage: tripData.image.startsWith('/uploads/') ? tripData.image : ''
+                    });
+                    setImageMode(tripData.image.startsWith('/uploads/') ? 'custom' : 'auto');
+                } else {
+                    // Trip not found, redirect to main page
+                    router.push('/');
+                }
+            } catch (error) {
+                console.error('Error fetching trip:', error);
+                router.push('/');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        
+        fetchTrip();
+    }, [resolvedParams.id, router]);
+
+    const handleSave = async () => {
         if (!trip) return;
 
-        // Determine which image to use
-        let imagePath = '';
-        if (imageMode === 'custom' && editFormData.customImage) {
-            imagePath = editFormData.customImage;
-        } else {
-            imagePath = getDestinationImage(editFormData.name);
-        }
-
-        const updatedTrip: Destination = {
-            ...trip,
-            name: editFormData.name,
-            country: editFormData.country,
-            description: editFormData.description,
-            startDate: editFormData.startDate,
-            endDate: editFormData.endDate,
-            image: imagePath,
-            attractions: editFormData.attractions
-                .split(',')
-                .map(attraction => attraction.trim())
-                .filter(attraction => attraction.length > 0)
-        };
-
-        // Update trip in localStorage
-        const savedTrips = localStorage.getItem('trips');
-        if (savedTrips) {
-            const trips: Destination[] = JSON.parse(savedTrips);
-            const tripIndex = trips.findIndex(t => t.id === trip.id);
-            if (tripIndex !== -1) {
-                trips[tripIndex] = updatedTrip;
-                localStorage.setItem('trips', JSON.stringify(trips));
-                setTrip(updatedTrip);
-                setIsEditing(false);
+        try {
+            // Determine which image to use
+            let imagePath = '';
+            if (imageMode === 'custom' && editFormData.customImage) {
+                imagePath = editFormData.customImage;
+            } else {
+                imagePath = getDestinationImage(editFormData.name);
             }
+
+            const updatedTrip = {
+                name: editFormData.name,
+                country: editFormData.country,
+                description: editFormData.description,
+                startDate: editFormData.startDate,
+                endDate: editFormData.endDate,
+                image: imagePath,
+                attractions: editFormData.attractions
+                    .split(',')
+                    .map(attraction => attraction.trim())
+                    .filter(attraction => attraction.length > 0)
+            };
+
+            const response = await fetch(`/api/trips/${trip.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedTrip),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                setTrip(result.data);
+                setIsEditing(false);
+            } else {
+                throw new Error(result.error || 'Failed to update trip');
+            }
+        } catch (error) {
+            console.error('Error updating trip:', error);
+            // You might want to show an error message to the user
         }
     };
 
@@ -126,7 +142,7 @@ export default function TripPage({ params }: TripPageProps) {
         });
     };
 
-    if (!trip) {
+    if (isLoading || !trip) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">

@@ -8,7 +8,7 @@ import { getDestinationImage } from '../utils/imageHelper';
 import ImageUpload from './ImageUpload.component';
 
 interface AddTripProps {
-    onAddTrip: (newTrip: Destination) => void;
+    onAddTrip: (newTrip: Omit<Destination, 'id'>) => void;
 }
 
 const AddTrip = ({ onAddTrip }: AddTripProps) => {
@@ -35,9 +35,8 @@ const AddTrip = ({ onAddTrip }: AddTripProps) => {
             imagePath = getDestinationImage(formData.name);
         }
         
-        // Create a new destination object
-        const newTrip: Destination = {
-            id: Date.now(),
+        // Create a new destination object (without ID - API will generate it)
+        const newTrip: Omit<Destination, 'id'> = {
             name: formData.name,
             country: formData.country,
             description: formData.description,
