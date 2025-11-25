@@ -51,14 +51,14 @@ const ImageUpload = ({ onImageUpload, currentImage, className = "" }: ImageUploa
 
       const result = await response.json();
 
-      if (!response.ok) {
+      if (!response.ok || !result.success) {
         throw new Error(result.error || 'Upload failed');
       }
 
       // Clean up preview URL and use the uploaded image
       URL.revokeObjectURL(previewUrl);
-      setPreview(result.url);
-      onImageUpload(result.url);
+      setPreview(result.imageUrl);
+      onImageUpload(result.imageUrl);
 
     } catch (error) {
       console.error('Upload error:', error);
