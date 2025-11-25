@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,40 +27,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create unique filename
-    const timestamp = Date.now();
-    const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const filename = `${timestamp}_${originalName}`;
-
-    // Convert file to buffer
+    // Convert file to base64
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-
-    // Ensure uploads directory exists
-    const uploadDir = path.join(process.cwd(), 'public/images/uploads');
-    try {
-      await mkdir(uploadDir, { recursive: true });
-    } catch (err) {
-      console.error('Error creating upload directory:', err);
-      return NextResponse.json(
-        { error: 'Could not create upload directory' },
-        { status: 500 }
-      );
-    }
-
-    // Write file
-    const filepath = path.join(uploadDir, filename);
-    await writeFile(filepath, buffer);
-
-    // Return the public URL
-    const publicUrl = `/images/uploads/${filename}`;
+    const base64 = buffer.toString('base64');
+    
+    // Create data URL with proper MIME type
+    const dataUrl = `data:${file.type};base64,${base64}`;
 
     return NextResponse.json({ 
-      message: 'Upload successful',
-      filename,
-      url: publicUrl
+      success: true, 
+      imageUrl: dataUrl,
+      originalName: file.name,
+      size: file.size,
+      type: file.type
     });
-
+    
   } catch (error) {
     console.error('Upload error:', error);
     return NextResponse.json(

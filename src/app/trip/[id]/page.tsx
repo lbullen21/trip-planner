@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { useState, use, useEffect } from 'react';
 import Image from 'next/image';
 import { Destination } from '../../../utils/types';
-import { getDestinationImage } from '../../../utils/imageHelper';
 import ImageUpload from '../../../components/ImageUpload.component';
 
 interface TripPageProps {
@@ -75,12 +74,10 @@ export default function TripPage({ params }: TripPageProps) {
         if (!trip) return;
 
         try {
-            // Determine which image to use
-            let imagePath = '';
-            if (imageMode === 'custom' && editFormData.customImage) {
-                imagePath = editFormData.customImage;
-            } else {
-                imagePath = getDestinationImage(editFormData.name);
+            // Require image upload if no image exists
+            if (!editFormData.customImage && !trip.image) {
+                alert('Please upload an image for your trip.');
+                return;
             }
 
             const updatedTrip = {
@@ -89,7 +86,7 @@ export default function TripPage({ params }: TripPageProps) {
                 description: editFormData.description,
                 startDate: editFormData.startDate,
                 endDate: editFormData.endDate,
-                image: imagePath,
+                image: editFormData.customImage || trip.image, // Use uploaded image or keep existing
                 attractions: editFormData.attractions
                     .split(',')
                     .map(attraction => attraction.trim())

@@ -4,7 +4,6 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { Destination } from '../utils/types';
-import { getDestinationImage } from '../utils/imageHelper';
 import ImageUpload from './ImageUpload.component';
 
 interface AddTripProps {
@@ -22,17 +21,13 @@ const AddTrip = ({ onAddTrip }: AddTripProps) => {
         customImage: ''
     });
 
-    const [imageMode, setImageMode] = useState<'auto' | 'custom'>('auto');
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         
-        // Determine which image to use
-        let imagePath = '';
-        if (imageMode === 'custom' && formData.customImage) {
-            imagePath = formData.customImage;
-        } else {
-            imagePath = getDestinationImage(formData.name);
+        // Require image upload
+        if (!formData.customImage) {
+            alert('Please upload an image for your trip.');
+            return;
         }
         
         // Create a new destination object (without ID - API will generate it)
@@ -42,7 +37,7 @@ const AddTrip = ({ onAddTrip }: AddTripProps) => {
             description: formData.description,
             startDate: formData.startDate,
             endDate: formData.endDate,
-            image: imagePath,
+            image: formData.customImage, // Use uploaded image
             attractions: formData.attractions.split(',').map(attraction => attraction.trim()).filter(attraction => attraction.length > 0)
         };
 
@@ -58,7 +53,6 @@ const AddTrip = ({ onAddTrip }: AddTripProps) => {
             attractions: '',
             customImage: ''
         });
-        setImageMode('auto');
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -94,35 +88,18 @@ const AddTrip = ({ onAddTrip }: AddTripProps) => {
                     />
                 </div>
 
-                {/* Image Selection Mode */}
+                {/* Image Upload */}
                 <div className="mb-4">
-                    <label className="block text-gray-700 mb-2">Photo</label>
+                    <label className="block text-gray-700 mb-2">Photo *</label>
+                    <p className="text-sm text-gray-500 mb-3">Upload an image for your trip</p>
                     
-                    {/* Image mode tabs */}
-                    <div className="flex space-x-1 mb-3">
-                        <button
-                            type="button"
-                            onClick={() => setImageMode('custom')}
-                            className={`px-3 py-1 text-sm rounded ${
-                                imageMode === 'custom' 
-                                ? 'bg-blue-500 text-white' 
-                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                            }`}
-                        >
-                            Upload image
-                        </button>
-                    </div>
+                    <ImageUpload
+                        onImageUpload={handleImageUpload}
+                        currentImage={formData.customImage}
+                    />
 
-                    {/* Image selection based on mode */}
-                    {imageMode === 'custom' && (
-                        <ImageUpload
-                            onImageUpload={handleImageUpload}
-                            currentImage={formData.customImage}
-                        />
-                    )}
-
-                    {/* Image Preview - only show when user has uploaded a custom image */}
-                    {imageMode === 'custom' && formData.customImage && (
+                    {/* Image Preview */}
+                    {formData.customImage && (
                         <div className="mt-3">
                             <div className="w-32 h-32 border border-gray-300 rounded overflow-hidden">
                                 <Image
@@ -134,7 +111,7 @@ const AddTrip = ({ onAddTrip }: AddTripProps) => {
                                 />
                             </div>
                             <p className="text-sm text-gray-500 mt-1">
-                                Custom uploaded image
+                                Uploaded image
                             </p>
                         </div>
                     )}
