@@ -1,4 +1,4 @@
-# 🌍 Trip Planner
+# 🌍 PlanIT Trip Planner
 
 A modern, full-stack trip planning application that allows users to create, manage, and organize their travel destinations with custom image uploads and drag-and-drop functionality.
 
